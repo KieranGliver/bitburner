@@ -4,8 +4,8 @@ import { growFile, weakFile, hackFile } from "./data";
 /**
  * Returns a list of servers the player can access based on available port opening programs.
  * @remark Ram Cost: 1.15 GB
- * - ns.getPurchasedServers()
- * - ns.fileExists()
+ * - ns.getPurchasedServers(): 1.05 GB
+ * - ns.fileExists(): 0.1 GB
  * @param ns - The Netscript environment.
  * @param allFlag - If true, includes all servers regardless of access level.
  * @returns An array of accessible server hostnames.
@@ -73,42 +73,63 @@ export function crackServer(ns:NS, server:string | Server) {
     ns.scp(weakFile, hostname);
     ns.scp(hackFile, hostname);
 
-    if (portNum > 4 && ns.fileExists("SQLInject.exe")) { ns.sqlinject(hostname); }
-    if (portNum > 3 && ns.fileExists("HTTPWorm.exe")) { ns.httpworm(hostname); }
-    if (portNum > 2 && ns.fileExists("relaySMTP.exe")) { ns.relaysmtp(hostname); }
-    if (portNum > 1 && ns.fileExists("FTPCrack.exe")) { ns.ftpcrack(hostname); }
-    if (portNum > 0 && ns.fileExists("BruteSSH.exe")) { ns.brutessh(hostname); }
+    if (portNum > 4 && ns.fileExists("SQLInject.exe", "home")) { ns.sqlinject(hostname); }
+    if (portNum > 3 && ns.fileExists("HTTPWorm.exe", "home")) { ns.httpworm(hostname); }
+    if (portNum > 2 && ns.fileExists("relaySMTP.exe", "home")) { ns.relaysmtp(hostname); }
+    if (portNum > 1 && ns.fileExists("FTPCrack.exe", "home")) { ns.ftpcrack(hostname); }
+    if (portNum > 0 && ns.fileExists("BruteSSH.exe", "home")) { ns.brutessh(hostname); }
 
     ns.nuke(hostname);  
 }
 
 /**
- * attempt to run script on first server with enough ram
+ * Attempts to run a script with multiple threads on multiple servers
  * @remark Ram Cost: 2.1 GB
- * - ns.getScriptRam()
- * - ns.getServerMaxRam()
- * - ns.getServerUsedRam()
- * - ns.scp()
- * - ns.exec()
+ * - ns.exec(): 1.3 GB
+ * - ns.scp(): 0.6 GB
+ * - ns.getScriptRam(): 0.1 GB
+ * - ns.getServerMaxRam(): 0.05 GB
+ * - ns.getServerUsedRam(): 0.05 GB
  * @param ns - Netscript object
  * @param serverList - list of servers to try to run the script on
  * @param script - script to run
  * @param threads - number of threads to run the script with
  * @param args - arguments to pass to the script
- * @returns pid of the script that was run, or 0 if no script was run
+ * @returns pid[] of the script that was run
  */
-export function runScript(ns: NS, serverList: string[], script: string, threads: number = 1, ...args: ScriptArg[]): number {
+export function runScript(ns: NS, serverList: string[], script: string, threads: number, ...args: ScriptArg[]): number[] {
+    const pids: number[] = [];
+    let n = threads;
+    
     for (const server of serverList) {
-        if (ns.getScriptRam(script) * threads <= ns.getServerMaxRam(server) - ns.getServerUsedRam(server)) {
-            // Need to copy the script and import modules to the server
+        if (n == 0) {
+            break;
+        }
+        
+        const availableRam = ns.getServerMaxRam(server) - ns.getServerUsedRam(server);
+        const scriptRam = ns.getScriptRam(script);
+        const serverThreads = Math.max(Math.min(Math.floor(availableRam / scriptRam), n), 0);
+
+        if (serverThreads) {
             ns.scp('utils.js', server);
             ns.scp('data.js', server);
             ns.scp(script, server);
 
-            return ns.exec(script, server, threads, ...args);
+            const pid = ns.exec(script, server, serverThreads, ...args);
+
+            if (pid) {
+                pids.push(pid);
+            }
         }
+
+        n -= serverThreads;
     }
-    ns.print(`No server available to run ${script}.`);
-    ns.ui.openTail();
-    return 0;
+
+    if (n > 0) {
+        ns.print(`Warn: Not enough servers available to run ${script} with ${threads} threads.`);
+        ns.print(`${threads - n} threads were run.`);
+        ns.ui.openTail();
+    }
+
+    return pids;
 }
