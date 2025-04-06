@@ -1,5 +1,5 @@
-import { NS, ScriptArg, Server } from "@ns";
-import { growFile, weakFile, hackFile } from "./data";
+import type { NS, ScriptArg, Server } from '@ns';
+import { growFile, hackFile, weakFile } from './data';
 
 /**
  * Returns a list of servers the player can access based on available port opening programs.
@@ -10,44 +10,118 @@ import { growFile, weakFile, hackFile } from "./data";
  * @param allFlag - If true, includes all servers regardless of access level.
  * @returns An array of accessible server hostnames.
  */
-export function getServerList(ns:NS, allFlag:boolean = false): Array<string> {
+export function getServerList(ns: NS, allFlag = false): Array<string> {
+	// Arrays of all servers divided by number of ports required.
+	const servers0Port = [
+		'n00dles',
+		'foodnstuff',
+		'sigma-cosmetics',
+		'joesguns',
+		'nectar-net',
+		'hong-fang-tea',
+		'harakiri-sushi',
+	];
 
-    // Arrays of all servers divided by number of ports required.
-    const servers0Port = ["n00dles", "foodnstuff", "sigma-cosmetics", "joesguns", "nectar-net", "hong-fang-tea", "harakiri-sushi"];
+	const servers1Port = ['neo-net', 'CSEC', 'zer0', 'max-hardware', 'iron-gym'];
 
-    const servers1Port = ["neo-net", "CSEC", "zer0", "max-hardware", "iron-gym"];
+	const servers2Port = [
+		'phantasy',
+		'silver-helix',
+		'omega-net',
+		'avmnite-02h',
+		'crush-fitness',
+		'johnson-ortho',
+		'the-hub',
+	];
 
-    const servers2Port = ["phantasy", "silver-helix",  "omega-net",  "avmnite-02h",  "crush-fitness",  "johnson-ortho",  "the-hub"];
+	const servers3Port = [
+		'netlink',
+		'rothman-uni',
+		'summit-uni',
+		'rho-construction',
+		'I.I.I.I',
+		'millenium-fitness',
+		'computek',
+		'catalyst',
+	];
 
-    const servers3Port = ["netlink", "rothman-uni", "summit-uni", "rho-construction", "I.I.I.I", "millenium-fitness", "computek", "catalyst"];
+	const servers4Port = [
+		'unitalife',
+		'univ-energy',
+		'zb-def',
+		'applied-energetics',
+		'run4theh111z',
+		'syscore',
+		'lexo-corp',
+		'aevum-police',
+		'global-pharm',
+		'nova-med',
+		'.',
+		'alpha-ent',
+		'snap-fitness',
+	];
 
-    const servers4Port = ["unitalife", "univ-energy", "zb-def", "applied-energetics", "run4theh111z", "syscore", "lexo-corp", "aevum-police", 
-                        "global-pharm", "nova-med", ".", "alpha-ent", "snap-fitness"];
-    
-    const servers5Port = ["zb-institute", "galactic-cyber", "deltaone", "icarus", "defcomm", "infocomm", "microdyne", "stormtech", "kuai-gong", 
-                        "b-and-a", "nwo", "megacorp", "vitalife", "4sigma", "blade", "omnia", "solaris", "zeus-med", "taiyang-digital", "titan-labs", 
-                        "fulcrumtech", "helios", "powerhouse-fitness", "omnitek", "clarkinc", "ecorp", "fulcrumassets", "The-Cave", "aerocorp"];
+	const servers5Port = [
+		'zb-institute',
+		'galactic-cyber',
+		'deltaone',
+		'icarus',
+		'defcomm',
+		'infocomm',
+		'microdyne',
+		'stormtech',
+		'kuai-gong',
+		'b-and-a',
+		'nwo',
+		'megacorp',
+		'vitalife',
+		'4sigma',
+		'blade',
+		'omnia',
+		'solaris',
+		'zeus-med',
+		'taiyang-digital',
+		'titan-labs',
+		'fulcrumtech',
+		'helios',
+		'powerhouse-fitness',
+		'omnitek',
+		'clarkinc',
+		'ecorp',
+		'fulcrumassets',
+		'The-Cave',
+		'aerocorp',
+	];
 
-    //if (ns.getServer("w0r1d_d43m0n")) {
-    //    servers5Port.push("w0r1d_d43m0n");
-    //}
+	//if (ns.getServer("w0r1d_d43m0n")) {
+	//    servers5Port.push("w0r1d_d43m0n");
+	//}
 
-    const ret: string[] = [];
+	const ret: string[] = [];
 
-    ret.push(...ns.getPurchasedServers().concat(servers0Port));
+	ret.push(...ns.getPurchasedServers().concat(servers0Port));
 
-    // checks if have port openning file on home. Adds servers that can be accessed.
-    if (ns.fileExists("BruteSSH.exe") || allFlag) { ret.push(...servers1Port); }
-    if (ns.fileExists("FTPCrack.exe") || allFlag) { ret.push(...servers2Port); }
-    if (ns.fileExists("relaySMTP.exe") || allFlag) { ret.push(...servers3Port); }
-    if (ns.fileExists("HTTPWorm.exe") || allFlag) { ret.push(...servers4Port); }
-    if (ns.fileExists("SQLInject.exe") || allFlag) { ret.push(...servers5Port); }
-    
-    ret.push("home");
+	// checks if have port openning file on home. Adds servers that can be accessed.
+	if (ns.fileExists('BruteSSH.exe') || allFlag) {
+		ret.push(...servers1Port);
+	}
+	if (ns.fileExists('FTPCrack.exe') || allFlag) {
+		ret.push(...servers2Port);
+	}
+	if (ns.fileExists('relaySMTP.exe') || allFlag) {
+		ret.push(...servers3Port);
+	}
+	if (ns.fileExists('HTTPWorm.exe') || allFlag) {
+		ret.push(...servers4Port);
+	}
+	if (ns.fileExists('SQLInject.exe') || allFlag) {
+		ret.push(...servers5Port);
+	}
 
-    // Return list with home computer at end.
-    return ret;
-  
+	ret.push('home');
+
+	// Return list with home computer at end.
+	return ret;
 }
 
 /**
@@ -65,21 +139,34 @@ export function getServerList(ns:NS, allFlag:boolean = false): Array<string> {
  * @param ns - Netscript object
  * @param server - The server to crack, either as a string or a Server object.
  */
-export function crackServer(ns:NS, server:string | Server) {
-    const portNum = typeof server === "string"? ns.getServerNumPortsRequired(server) : ns.getServerNumPortsRequired(server.hostname);
-    const hostname = typeof server === "string"? server : server.hostname;
+export function crackServer(ns: NS, server: string | Server) {
+	const portNum =
+		typeof server === 'string'
+			? ns.getServerNumPortsRequired(server)
+			: ns.getServerNumPortsRequired(server.hostname);
+	const hostname = typeof server === 'string' ? server : server.hostname;
 
-    ns.scp(growFile, hostname);
-    ns.scp(weakFile, hostname);
-    ns.scp(hackFile, hostname);
+	ns.scp(growFile, hostname);
+	ns.scp(weakFile, hostname);
+	ns.scp(hackFile, hostname);
 
-    if (portNum > 4 && ns.fileExists("SQLInject.exe", "home")) { ns.sqlinject(hostname); }
-    if (portNum > 3 && ns.fileExists("HTTPWorm.exe", "home")) { ns.httpworm(hostname); }
-    if (portNum > 2 && ns.fileExists("relaySMTP.exe", "home")) { ns.relaysmtp(hostname); }
-    if (portNum > 1 && ns.fileExists("FTPCrack.exe", "home")) { ns.ftpcrack(hostname); }
-    if (portNum > 0 && ns.fileExists("BruteSSH.exe", "home")) { ns.brutessh(hostname); }
+	if (portNum > 4 && ns.fileExists('SQLInject.exe', 'home')) {
+		ns.sqlinject(hostname);
+	}
+	if (portNum > 3 && ns.fileExists('HTTPWorm.exe', 'home')) {
+		ns.httpworm(hostname);
+	}
+	if (portNum > 2 && ns.fileExists('relaySMTP.exe', 'home')) {
+		ns.relaysmtp(hostname);
+	}
+	if (portNum > 1 && ns.fileExists('FTPCrack.exe', 'home')) {
+		ns.ftpcrack(hostname);
+	}
+	if (portNum > 0 && ns.fileExists('BruteSSH.exe', 'home')) {
+		ns.brutessh(hostname);
+	}
 
-    ns.nuke(hostname);  
+	ns.nuke(hostname);
 }
 
 /**
@@ -97,39 +184,51 @@ export function crackServer(ns:NS, server:string | Server) {
  * @param args - arguments to pass to the script
  * @returns pid[] of the script that was run
  */
-export function runScript(ns: NS, serverList: string[], script: string, threads: number, ...args: ScriptArg[]): number[] {
-    const pids: number[] = [];
-    let n = threads;
-    
-    for (const server of serverList) {
-        if (n == 0) {
-            break;
-        }
-        
-        const availableRam = ns.getServerMaxRam(server) - ns.getServerUsedRam(server);
-        const scriptRam = ns.getScriptRam(script);
-        const serverThreads = Math.max(Math.min(Math.floor(availableRam / scriptRam), n), 0);
+export function runScript(
+	ns: NS,
+	serverList: string[],
+	script: string,
+	threads: number,
+	...args: ScriptArg[]
+): number[] {
+	const pids: number[] = [];
+	let n = threads;
 
-        if (serverThreads) {
-            ns.scp('utils.js', server);
-            ns.scp('data.js', server);
-            ns.scp(script, server);
+	for (const server of serverList) {
+		if (n === 0) {
+			break;
+		}
 
-            const pid = ns.exec(script, server, serverThreads, ...args);
+		const availableRam =
+			ns.getServerMaxRam(server) - ns.getServerUsedRam(server);
+		const scriptRam = ns.getScriptRam(script);
+		const serverThreads = Math.max(
+			Math.min(Math.floor(availableRam / scriptRam), n),
+			0,
+		);
 
-            if (pid) {
-                pids.push(pid);
-            }
-        }
+		if (serverThreads) {
+			ns.scp('utils.js', server);
+			ns.scp('data.js', server);
+			ns.scp(script, server);
 
-        n -= serverThreads;
-    }
+			const pid = ns.exec(script, server, serverThreads, ...args);
 
-    if (n > 0) {
-        ns.print(`Warn: Not enough servers available to run ${script} with ${threads} threads.`);
-        ns.print(`${threads - n} threads were run.`);
-        ns.ui.openTail();
-    }
+			if (pid) {
+				pids.push(pid);
+			}
+		}
 
-    return pids;
+		n -= serverThreads;
+	}
+
+	if (n > 0) {
+		ns.print(
+			`Warn: Not enough servers available to run ${script} with ${threads} threads.`,
+		);
+		ns.print(`${threads - n} threads were run.`);
+		ns.ui.openTail();
+	}
+
+	return pids;
 }
