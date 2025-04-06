@@ -2,7 +2,7 @@ import { NS, Server } from "@ns";
 import { getServerList } from "./utils";
 import { growFile, weakFile, hackFile } from "./data";
 
-export function crackServer(ns:NS, server:string | Server) {
+function crackServer(ns:NS, server:string | Server) {
     const portNum = typeof server === "string"? ns.getServerNumPortsRequired(server) : ns.getServerNumPortsRequired(server.hostname);
     const hostname = typeof server === "string"? server : server.hostname;
 
@@ -21,7 +21,7 @@ export function crackServer(ns:NS, server:string | Server) {
 
 export async function main(ns: NS): Promise<void> {
     // Get all servers not purchased by the player and not home
-    const servers = getServerList(ns).filter((hostname) => !ns.getServer(hostname).purchasedByPlayer && hostname != "home");
+    const servers = getServerList(ns).filter((hostname) => !ns.getPurchasedServers().includes(hostname) && hostname != "home");
 
     for (const hostname of servers) {
           crackServer(ns, hostname);
