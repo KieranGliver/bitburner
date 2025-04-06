@@ -1,5 +1,5 @@
 import { NS } from "@ns";
-import { getServerList, countTotalThreads, createGrowProcess, createWeakProcess, createHackProcess, BatchThreads } from "../functions";
+import { getServerList, countTotalThreads, createGrowProcess, createWeakProcess, createHackProcess, BatchThreads } from "./functions";
 import { processList } from "./process-list";
 
 export async function main(ns: NS): Promise<void> {
