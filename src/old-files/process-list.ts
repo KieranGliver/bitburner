@@ -1,4 +1,4 @@
-import { Process, countTotalThreads, getServerList, runScript } from "../functions";
+import { Process, countTotalThreads, getServerList, runScript } from "./functions";
 import { NS } from "@ns";
 
 export class processList {

@@ -4,8 +4,6 @@ const growFile = "grow.js";
 const weakFile = "weak.js";
 const hackFile = "hack.js";
 
-
-
 export interface Process {
     pid:number,
     threads:number,
