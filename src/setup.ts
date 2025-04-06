@@ -1,28 +1,22 @@
 import { NS } from "@ns";
-import { getServerList, runScript } from "./utils";
+import { crackServer, getServerList, runScript } from "./utils";
 
 export async function main(ns: NS): Promise<void> {
     const serverList = getServerList(ns);
+    const crackServers = serverList.filter((hostname) => !ns.getPurchasedServers().includes(hostname) && hostname != "home");
 
     for (const server of serverList) {
         ns.killall(server);
     }
 
-    const crackPid = runScript(ns, serverList, "crack.js");
-
-    // Stop running if crack.js fails to run
-    if (!crackPid) {
-        ns.exit();
+    for (const server of crackServers) {
+        crackServer(ns, server);
     }
 
-    while (ns.getRunningScript(crackPid)) {
-        await ns.sleep(500);
-    }
-
-    const targetServers = getServerList(ns).filter((hostname) => !ns.getPurchasedServers().includes(hostname) && hostname != "home" && ns.getServerRequiredHackingLevel(hostname) <= ns.getPlayer().skills.hacking);
+    const hackServers = crackServers.filter((hostname) =>  ns.getServerRequiredHackingLevel(hostname) <= ns.getPlayer().skills.hacking);
 
     // run server-hack.js on all valid servers
-    for (const server of targetServers) {
+    for (const server of hackServers) {
         runScript(ns, serverList, "server-hack.js", 1, server);
     }
 

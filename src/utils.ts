@@ -1,4 +1,5 @@
-import { NS, ScriptArg } from "@ns";
+import { NS, ScriptArg, Server } from "@ns";
+import { growFile, weakFile, hackFile } from "./data";
 
 /**
  * Returns a list of servers the player can access based on available port opening programs.
@@ -47,6 +48,38 @@ export function getServerList(ns:NS, allFlag:boolean = false): Array<string> {
     // Return list with home computer at end.
     return ret;
   
+}
+
+/**
+ * Crack a server by running all available hacking programs on it.
+ * @remark Ram Cost: 1.10 GB
+ * - ns.scp: 0.6 GB
+ * - ns.getServerNumPortsRequired: 0.1 GB
+ * - ns.fileExists: 0.1 GB
+ * - ns.sqlinject: 0.05 GB
+ * - ns.httpworm: 0.05 GB
+ * - ns.relaysmtp: 0.05 GB
+ * - ns.ftpcrack: 0.05 GB
+ * - ns.brutessh: 0.05 GB
+ * - ns.nuke: 0.05 GB
+ * @param ns - Netscript object
+ * @param server - The server to crack, either as a string or a Server object.
+ */
+export function crackServer(ns:NS, server:string | Server) {
+    const portNum = typeof server === "string"? ns.getServerNumPortsRequired(server) : ns.getServerNumPortsRequired(server.hostname);
+    const hostname = typeof server === "string"? server : server.hostname;
+
+    ns.scp(growFile, hostname);
+    ns.scp(weakFile, hostname);
+    ns.scp(hackFile, hostname);
+
+    if (portNum > 4 && ns.fileExists("SQLInject.exe")) { ns.sqlinject(hostname); }
+    if (portNum > 3 && ns.fileExists("HTTPWorm.exe")) { ns.httpworm(hostname); }
+    if (portNum > 2 && ns.fileExists("relaySMTP.exe")) { ns.relaysmtp(hostname); }
+    if (portNum > 1 && ns.fileExists("FTPCrack.exe")) { ns.ftpcrack(hostname); }
+    if (portNum > 0 && ns.fileExists("BruteSSH.exe")) { ns.brutessh(hostname); }
+
+    ns.nuke(hostname);  
 }
 
 /**
