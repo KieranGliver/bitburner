@@ -1,5 +1,5 @@
 import type { NS, ScriptArg, Server } from '@ns';
-import { process } from './data';
+import type { process } from './data';
 
 /**
  * Returns a list of servers the player can access based on available port opening programs.
@@ -210,13 +210,13 @@ export function runScript(
 			const pid = ns.exec(script, hostname, serverThreads, ...args);
 
 			if (pid) {
-                ret.push({
-                    pid: pid,
-                    arguments: [...args],
-                    script: script,
-                    server: hostname,
-                    threads: serverThreads
-                });
+				ret.push({
+					pid: pid,
+					arguments: [...args],
+					script: script,
+					server: hostname,
+					threads: serverThreads,
+				});
 			}
 		}
 
@@ -230,8 +230,92 @@ export function runScript(
 		ns.ui.openTail();
 	}
 
-    ns.print(`Finished running ${script} with ${threads-n} of ${threads} threads with args: ${[...args]}`)
+	ns.print(
+		`Finished running ${script} with ${threads - n} of ${threads} threads with args: ${[...args]}`,
+	);
 	return ret;
 }
+/**
+ * Generates a formatted UI string with a customizable outline and content.
+ * The UI can display either a single string or an array of strings, centered within a bordered box.
+ *
+ * @remark 0 GB
+ * @param data - The content to display inside the UI. Can be a single string or an array of strings.
+ * @param width - The total width of the UI box, including the outline.
+ * @param thickness - The thickness of the outline border. Defaults to 1.
+ * @param outlinePattern - The pattern used for the outline border. Defaults to "#".
+ * @returns A string representing the formatted UI box.
+ */
+export function createUI(
+	data: string | Array<string>,
+	width: number,
+	thickness = 1,
+	outlinePattern = '#',
+): string {
+	let ui = `${outlinePattern
+		.repeat(Math.max(Math.ceil(width / outlinePattern.length), 0))
+		.substring(0, width)}\n`;
 
+	if (typeof data === 'string') {
+		ui = `${
+			ui +
+			outlinePattern
+				.repeat(Math.max(Math.ceil(thickness / outlinePattern.length), 0))
+				.substring(0, thickness) +
+			' '.repeat(
+				Math.max(Math.floor((width - 2 * thickness - data.length) / 2), 0),
+			) +
+			data +
+			' '.repeat(
+				Math.max(Math.ceil((width - 2 * thickness - data.length) / 2), 0),
+			) +
+			outlinePattern
+				.repeat(Math.max(Math.ceil(thickness / outlinePattern.length), 0))
+				.substring(0, thickness)
+		}\n`;
+	} else {
+		for (const d of data) {
+			ui = `${
+				ui +
+				outlinePattern
+					.repeat(Math.max(Math.ceil(thickness / outlinePattern.length), 0))
+					.substring(0, thickness) +
+				' '.repeat(
+					Math.max(Math.floor((width - 2 * thickness - d.length) / 2), 0),
+				) +
+				d +
+				' '.repeat(
+					Math.max(Math.ceil((width - 2 * thickness - d.length) / 2), 0),
+				) +
+				outlinePattern
+					.repeat(Math.max(Math.ceil(thickness / outlinePattern.length), 0))
+					.substring(0, thickness)
+			}\n`;
+		}
+	}
 
+	return `${
+		ui +
+		outlinePattern
+			.repeat(Math.ceil(width / outlinePattern.length))
+			.substring(0, width)
+	}\n`;
+}
+
+/**
+ * displays a message in the UI and sleeps for a specified amount of time
+ *
+ * @remark 0 GB
+ * @param ns - Netscript object
+ * @param text - The text to display in the UI. If empty, the UI will be cleared.
+ * @param sleepLength - The amount of time to sleep in milliseconds.
+ */
+export async function displayUI(ns: NS, text: string, sleepLength: number) {
+	ns.disableLog('sleep');
+	ns.clearLog();
+	if (text) {
+		ns.print(text);
+	}
+	await ns.sleep(sleepLength);
+	ns.enableLog('sleep');
+}
