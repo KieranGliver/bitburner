@@ -47,10 +47,10 @@ export async function main(ns: NS): Promise<void> {
 		return Math.ceil(ns.growthAnalyze(hostname, multi));
 	}
 
-	function threadsToHackMoney(hostname: string, hackPercent: number) {
+	function threadsToHackMoney(hostname: string, percentRemaining: number) {
 		const max = ns.getServerMaxMoney(hostname);
 		const avail = ns.getServerMoneyAvailable(hostname);
-		const hackAmount = (avail / max - hackPercent) * max;
+		const hackAmount = (avail / max - percentRemaining) * max;
 		if (hackAmount > 0) {
 			return Math.ceil(
 				ns.hackAnalyzeThreads(hostname, hackAmount) /
@@ -76,7 +76,7 @@ export async function main(ns: NS): Promise<void> {
 			runScript(ns, serverList, growFile, threads, target);
 			waitTime = ns.getGrowTime(target);
 		} else {
-			const threads = threadsToHackMoney(target, 0.75);
+			const threads = threadsToHackMoney(target, 0.2);
 			runScript(ns, serverList, hackFile, threads, target);
 			waitTime = ns.getHackTime(target);
 		}
