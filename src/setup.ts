@@ -1,5 +1,6 @@
 import type { NS } from '@ns';
 import { crackServer, getServerList, runScript } from './utils';
+import { growFile, hackFile, weakFile } from './data';
 
 // Total scirpt ram cost should be under 8GB to allow to run on new saves
 export async function main(ns: NS): Promise<void> {
@@ -9,6 +10,9 @@ export async function main(ns: NS): Promise<void> {
 			!ns.getPurchasedServers().includes(hostname) && hostname !== 'home',
 	);
 	for (const hostname of serverList) {
+        ns.scp(growFile, hostname);
+        ns.scp(weakFile, hostname);
+        ns.scp(hackFile, hostname);
 		ns.killall(hostname);
 	}
 
@@ -25,15 +29,15 @@ export async function main(ns: NS): Promise<void> {
 	const hackServers = crackServers.filter(
 		(hostname) =>
 			ns.getServerRequiredHackingLevel(hostname) <=
-			ns.getPlayer().skills.hacking,
+			ns.getHackingLevel(),
 	);
 
 	// run server-hack.js on all valid servers
 	for (const hostname of hackServers) {
-		const pids = runScript(ns, serverList, 'server-hack.js', 1, hostname);
-		if (pids.length > 0) {
+		const processList = runScript(ns, serverList, 'server-hack.js', 1, hostname);
+		if (processList.length > 0) {
 			ns.print(`Running server-hack.js on ${hostname} with PID(s):`);
-			ns.print(...pids);
+			ns.print(...processList.map((process) => process.pid));
 		}
 	}
 

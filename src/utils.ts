@@ -1,5 +1,5 @@
 import type { NS, ScriptArg, Server } from '@ns';
-import { growFile, hackFile, weakFile } from './data';
+import { process } from './data';
 
 /**
  * Returns a list of servers the player can access based on available port opening programs.
@@ -126,8 +126,7 @@ export function getServerList(ns: NS, allFlag = false): Array<string> {
 
 /**
  * Crack a server by running all available hacking programs on it.
- * @remark Ram Cost: 1.10 GB
- * - ns.scp: 0.6 GB
+ * @remark Ram Cost: 0.5 GB
  * - ns.getServerNumPortsRequired: 0.1 GB
  * - ns.fileExists: 0.1 GB
  * - ns.sqlinject: 0.05 GB
@@ -145,10 +144,6 @@ export function crackServer(ns: NS, server: string | Server) {
 			? ns.getServerNumPortsRequired(server)
 			: ns.getServerNumPortsRequired(server.hostname);
 	const hostname = typeof server === 'string' ? server : server.hostname;
-
-	ns.scp(growFile, hostname);
-	ns.scp(weakFile, hostname);
-	ns.scp(hackFile, hostname);
 
 	if (portNum > 4 && ns.fileExists('SQLInject.exe', 'home')) {
 		ns.sqlinject(hostname);
@@ -190,17 +185,17 @@ export function runScript(
 	script: string,
 	threads: number,
 	...args: ScriptArg[]
-): number[] {
-	const pids: number[] = [];
+): process[] {
+	const ret: process[] = [];
 	let n = threads;
 
-	for (const server of serverList) {
+	for (const hostname of serverList) {
 		if (n === 0) {
 			break;
 		}
 
 		const availableRam =
-			ns.getServerMaxRam(server) - ns.getServerUsedRam(server);
+			ns.getServerMaxRam(hostname) - ns.getServerUsedRam(hostname);
 		const scriptRam = ns.getScriptRam(script);
 		const serverThreads = Math.max(
 			Math.min(Math.floor(availableRam / scriptRam), n),
@@ -208,14 +203,20 @@ export function runScript(
 		);
 
 		if (serverThreads) {
-			ns.scp('utils.js', server);
-			ns.scp('data.js', server);
-			ns.scp(script, server);
+			ns.scp('utils.js', hostname);
+			ns.scp('data.js', hostname);
+			ns.scp(script, hostname);
 
-			const pid = ns.exec(script, server, serverThreads, ...args);
+			const pid = ns.exec(script, hostname, serverThreads, ...args);
 
 			if (pid) {
-				pids.push(pid);
+                ret.push({
+                    pid: pid,
+                    arguments: [...args],
+                    script: script,
+                    server: hostname,
+                    threads: serverThreads
+                });
 			}
 		}
 
@@ -226,9 +227,11 @@ export function runScript(
 		ns.print(
 			`Warn: Not enough servers available to run ${script} with ${threads} threads.`,
 		);
-		ns.print(`${threads - n} threads were run.`);
 		ns.ui.openTail();
 	}
 
-	return pids;
+    ns.print(`Finished running ${script} with ${threads-n} of ${threads} threads with args: ${[...args]}`)
+	return ret;
 }
+
+
