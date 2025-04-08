@@ -102,19 +102,19 @@ export function getServerList(ns: NS, allFlag = false): Array<string> {
 	ret.push(...ns.getPurchasedServers().concat(servers0Port));
 
 	// checks if have port openning file on home. Adds servers that can be accessed.
-	if (ns.fileExists('BruteSSH.exe') || allFlag) {
+	if (ns.fileExists('BruteSSH.exe', 'home') || allFlag) {
 		ret.push(...servers1Port);
 	}
-	if (ns.fileExists('FTPCrack.exe') || allFlag) {
+	if (ns.fileExists('FTPCrack.exe', 'home') || allFlag) {
 		ret.push(...servers2Port);
 	}
-	if (ns.fileExists('relaySMTP.exe') || allFlag) {
+	if (ns.fileExists('relaySMTP.exe', 'home') || allFlag) {
 		ret.push(...servers3Port);
 	}
-	if (ns.fileExists('HTTPWorm.exe') || allFlag) {
+	if (ns.fileExists('HTTPWorm.exe', 'home') || allFlag) {
 		ret.push(...servers4Port);
 	}
-	if (ns.fileExists('SQLInject.exe') || allFlag) {
+	if (ns.fileExists('SQLInject.exe', 'home') || allFlag) {
 		ret.push(...servers5Port);
 	}
 
@@ -310,12 +310,16 @@ export function createUI(
  * @param text - The text to display in the UI. If empty, the UI will be cleared.
  * @param sleepLength - The amount of time to sleep in milliseconds.
  */
-export async function displayUI(ns: NS, text: string, sleepLength: number) {
+export async function displayUI(ns: NS, text: string, sleepLength: number, size: {x: number, y: number} = {x: 0, y: 0}) {
 	ns.disableLog('sleep');
 	ns.clearLog();
 	if (text) {
 		ns.print(text);
 	}
 	await ns.sleep(sleepLength);
+	// resize the UI to fit the text
+	if (size.x > 0 && size.y > 0) {
+		ns.ui.resizeTail(size.x*9.635, size.y*25.548);
+	}
 	ns.enableLog('sleep');
 }

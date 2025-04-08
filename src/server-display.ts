@@ -11,10 +11,10 @@ export async function main(ns: NS): Promise<void> {
 		const serverData: string[] = [];
 
 		for (const hostname of serverList) {
-			const maxMoney = ns.getServerMaxMoney(hostname) ?? 0;
-			const avialMoney = ns.getServerMoneyAvailable(hostname) ?? 0;
+			const maxMoney = ns.getServerMaxMoney(hostname);
+			const avialMoney = ns.getServerMoneyAvailable(hostname);
 
-			const left = `{ ${'$'.repeat(Math.floor((avialMoney / maxMoney) * 10))}${'0'.repeat(10 - Math.floor((avialMoney / maxMoney) * 10))} } | ${hostname} | ${Math.round((ns.getServerSecurityLevel(hostname) ?? 0) - (ns.getServerMinSecurityLevel(hostname) ?? 0))}`;
+			const left = `{ ${'$'.repeat(Math.floor((avialMoney / maxMoney) * 10))}${'0'.repeat(10 - Math.floor((avialMoney / maxMoney) * 10))} } | ${hostname} | ${Math.round((ns.getServerSecurityLevel(hostname)) - (ns.getServerMinSecurityLevel(hostname)))}`;
 			const right = `${ns.formatNumber(avialMoney)} / ${ns.formatNumber(maxMoney)}`;
 			serverData.push(
 				left + ' '.repeat(Math.max(56 - left.length - right.length, 0)) + right,
@@ -24,16 +24,19 @@ export async function main(ns: NS): Promise<void> {
 		return serverData;
 	}
 
+    ns.ui.openTail();
+
 	// @ignore-infinite
 	while (true) {
-		ns.ui.openTail();
 		const serverList = getServerList(ns);
+		const tailW = 60;
 
-		const header = createUI('Server Display', 60, 5);
+        serverList.pop(); // Remove home server
+		const header = createUI('Server Display', tailW, 5);
 
 		const serverUI = createUI(
 			formatServerList(ns, serverList.filter(isHackable)),
-			60,
+			tailW,
 			1,
 			'~',
 		);
@@ -43,8 +46,15 @@ export async function main(ns: NS): Promise<void> {
 		)} / ${ns.formatRam(
 			serverList.reduce((ac, cVal) => ac + ns.getServerMaxRam(cVal), 0),
 		)}`;
-		const footer = createUI(ram, 60, 5);
+		const footer = createUI(ram, tailW, 5);
 
-		await displayUI(ns, header + serverUI + footer, 10);
+		const countNewLines = (str: string) => (str.match(/\n/g) || []).length;
+
+		const tailH =
+			countNewLines(header) +
+			countNewLines(serverUI) +
+			countNewLines(footer)
+
+		await displayUI(ns, header + serverUI + footer, 10, {x: tailW, y: tailH});
 	}
 }
