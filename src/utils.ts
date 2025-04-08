@@ -186,6 +186,14 @@ export function runScript(
 	threads: number,
 	...args: ScriptArg[]
 ): process[] {
+	// Disable all logs
+	ns.disableLog('disableLog');
+	ns.disableLog('enableLog');
+	ns.disableLog('getServerMaxRam');
+	ns.disableLog('getServerUsedRam');
+	ns.disableLog('exec');
+	ns.disableLog('scp');
+
 	const ret: process[] = [];
 	let n = threads;
 
@@ -223,16 +231,25 @@ export function runScript(
 		n -= serverThreads;
 	}
 
+	// Enable all logs
+	ns.enableLog('getServerMaxRam');
+	ns.enableLog('getServerUsedRam');
+	ns.enableLog('exec');
+	ns.enableLog('scp');
+	ns.enableLog('disableLog');
+	ns.enableLog('enableLog');
+
 	if (n > 0) {
 		ns.print(
 			`Warn: Not enough servers available to run ${script} with ${threads} threads.`,
 		);
-		ns.ui.openTail();
+		//ns.ui.openTail();
 	}
 
 	ns.print(
 		`Finished running ${script} with ${threads - n} of ${threads} threads with args: ${[...args]}`,
 	);
+
 	return ret;
 }
 /**

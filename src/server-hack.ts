@@ -3,6 +3,16 @@ import { growFile, hackFile, weakFile } from './data';
 import { getServerList, runScript } from './utils';
 
 export async function main(ns: NS): Promise<void> {
+	// Disable logs
+	ns.disableLog('disableLog');
+	ns.disableLog('getServerMaxMoney')
+	ns.disableLog('getServerMoneyAvailable');
+	ns.disableLog('getServerSecurityLevel');
+	ns.disableLog('getServerMinSecurityLevel');
+	ns.disableLog('getHackingLevel');
+	ns.disableLog('getServerRequiredHackingLevel');
+
+
 	// Checks for the number of arguments given to the script
 	if (ns.args.length !== 1) {
 		ns.print(`ERROR: ${ns.args.length} arguments given. Requires 1 (hostname)`);
@@ -60,12 +70,12 @@ export async function main(ns: NS): Promise<void> {
 		return 0;
 	}
 
-	const moneyThresh = ns.getServerMaxMoney(target);
-	const securityThresh = ns.getServerMinSecurityLevel(target);
-	const serverList = getServerList(ns);
+	const moneyThresh = ns.getServerMaxMoney(target) * 0.5;
+	const securityThresh = ns.getServerMinSecurityLevel(target) + 2.5;
 
 	// @ignore-infinite
 	while (true) {
+		const serverList = getServerList(ns);
 		let waitTime = 0;
 		if (ns.getServerSecurityLevel(target) > securityThresh) {
 			const threads = threadsToWeakenServer(target);
