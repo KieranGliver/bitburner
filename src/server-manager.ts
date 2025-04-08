@@ -21,7 +21,7 @@ export async function main(ns: NS): Promise<void> {
 
 	function findMaxPurchase() {
 		let max = minRam;
-		const liquidMoney = ns.getPlayer().money * liquid;
+		const liquidMoney = ns.getServerMoneyAvailable("home") * liquid;
 		while (max < maxRam && ns.getPurchasedServerCost(max * 2) < liquidMoney) {
 			max = max * 2;
 		}
@@ -30,7 +30,7 @@ export async function main(ns: NS): Promise<void> {
 
 	function findMaxUpgrade(hostname: string) {
 		let max = ns.getServerMaxRam(hostname);
-		const liquidMoney = ns.getPlayer().money * liquid;
+		const liquidMoney = ns.getServerMoneyAvailable("home") * liquid;
 		while (
 			max < maxRam &&
 			ns.getPurchasedServerUpgradeCost(hostname, max * 2) < liquidMoney
